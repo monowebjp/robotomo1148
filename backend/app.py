@@ -84,6 +84,20 @@ def get_images():
         result.append(image_data)
     return jsonify(result), 200
 
+# 個別ページのエンドポイント
+@app.route('/images/<int:image_id>', methods=['GET'])
+def get_image(image_id):
+    image = ImageData.query.get_or_404(image_id)
+    image_data = {
+        'id': image.id,
+        'author_name': image.author_name,
+        'main_image_path': f"/img/thanks/{image.main_image_path}",
+        'sub_image_paths': [f"/img/thanks/{path}" for path in image.sub_image_paths],
+        'tags': image.tags,
+        'comments': image.comments,
+    }
+    return jsonify(image_data), 200
+
 # OPTIONSリクエストの処理
 @app.route('/images', methods=['OPTIONS'])
 def images_options():
