@@ -1,13 +1,12 @@
-version: '3.8'
-
 services:
   backend:
     build:
       context: ../
       dockerfile: ./docker/Dockerfile
     ports:
-      - "5000:5000"
+      - "5001:5000"
     volumes:
       - ../backend:/app
+      - ../frontend/public/img/thanks:/app/static/uploads/thanks
     environment:
       - FLASK_ENV=development

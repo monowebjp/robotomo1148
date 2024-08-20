@@ -1,8 +1,8 @@
 <template>
   <div class="m-imageGallery">
-    <div class="m-imageGallery__item" v-for="item in items" :key="item.src">
-      <nuxt-link :to="'/thanks/1'">
-        <img :src="'/img/thanks/' + item.src" alt="" loading="lazy">
+    <div class="m-imageGallery__item" v-for="image in images" :key="image.id">
+      <nuxt-link :to="'/thanks/'">
+        <img :src="image.main_image_path" alt="" loading="lazy">
       </nuxt-link>
     </div>
   </div>
@@ -11,9 +11,9 @@
 <script lang="ts">
 export default {
   props: {
-    items: {
+    images: {
       type: {
-        src: String
+        main_image_path: String
       }<Array>,
       required: true
     }
