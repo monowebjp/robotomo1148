@@ -1,34 +1,35 @@
 <template>
-  <div>
-    <h1>Image Registration</h1>
+  <Content bg-type="paper">
+    <h1>いただいた画像登録</h1>
     <form @submit.prevent="registerImage" enctype="multipart/form-data">
-      <div>
-        <label for="author_name">Author Name</label>
-        <input v-model="form.author_name" id="author_name" required />
-      </div>
-      <div>
-        <label for="main_image">Main Image</label>
-        <input type="file" @change="handleMainImage" id="main_image" required />
-      </div>
-      <div>
-        <label for="sub_images">Sub Images (up to 5)</label>
-        <input type="file" @change="handleSubImages" id="sub_images" multiple />
-      </div>
-      <div>
-        <label for="tags">Tags (comma separated)</label>
-        <input v-model="form.tags" id="tags" />
-      </div>
-      <div>
-        <label for="comments">Comments</label>
-        <textarea v-model="form.comments" id="comments"></textarea>
-      </div>
-      <button type="submit">Register</button>
+      <dl>
+        <dt><label for="author_name">書いてくれた人</label></dt>
+        <dd><input v-model="form.author_name" id="author_name" required /></dd>
+      </dl>
+      <dl>
+        <dt><label for="main_image">メイン画像</label></dt>
+        <dd><input type="file" @change="handleMainImage" id="main_image" required /></dd>
+      </dl>
+      <dl>
+        <dt><label for="sub_images">サブ画像 (5枚まで)</label></dt>
+        <dd><input type="file" @change="handleSubImages" id="sub_images" multiple /></dd>
+      </dl>
+      <dl>
+        <dt><label for="tags">タグ (カンマで分割)</label></dt>
+        <dd><input v-model="form.tags" id="tags" /></dd>
+      </dl>
+      <dl>
+        <dt><label for="comments">コメント</label></dt>
+        <dd><textarea v-model="form.comments" id="comments"></textarea></dd>
+      </dl>
+      <button type="submit">保存</button>
     </form>
-  </div>
+  </Content>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import Content from "~/components/app/Content.vue";
 
 interface Form {
   author_name: string

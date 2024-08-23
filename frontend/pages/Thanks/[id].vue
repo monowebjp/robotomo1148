@@ -1,17 +1,26 @@
 <template>
-  <Content>
+  <Content bg-type="paper">
     <div v-if="loading">
       <p>Loading...</p>
     </div>
     <div v-else-if="image">
-      {{ image }}
-      <img :src="image.main_image_path" alt="">
-      <img :src="sub" alt="" v-for="sub in image.sub_image_paths" :key="sub">
-      {{ image.author_name }}
-      <p v-if="image.comments">{{ image.comments }}</p>
-      <ul v-if="image.tags">
-        <li v-for="tag in image.tags" :key="tag">{{ tag }}</li>
-      </ul>
+      <PrevButton to-path="/thanks">一覧に戻る</PrevButton>
+      <ImageSlides :main-path="image.main_image_path" :sub-paths="image.sub_image_paths" />
+      <dl>
+        <dt><i class="c-icon c-icon--user"></i></dt>
+        <dd>{{ image.author_name }} 様</dd>
+      </dl>
+      <dl>
+        <dt><i class="c-icon c-icon--priceTag"></i></dt>
+        <dd>
+          <Tags :tags="image.tags" />
+        </dd>
+      </dl>
+
+      <div class="c-box">
+        <p v-if="image.comments">{{ image.comments }}</p>
+      </div>
+
     </div>
     <div v-else>
       <p>Image not found.</p>
@@ -23,6 +32,9 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import Content from "~/components/app/Content.vue";
+import Tags from "~/components/atoms/Tags.vue";
+import ImageSlides from "~/components/molecules/ImageSlides.vue";
+import PrevButton from "~/components/atoms/PrevButton.vue";
 
 interface ImageData {
   id: number
@@ -42,7 +54,6 @@ onMounted(async () => {
     const response = await fetch(`/api/images/${route.params.id}`)
     if (response.ok) {
       image.value = await response.json() as ImageData
-      console.log(image)
     } else {
       console.error('Failed to fetch image')
     }
@@ -55,8 +66,22 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
-div {
-  background-image: url("@/assets/img/paper.jpg");
-  border-radius: 2px;
+dl {
+  display: flex;
+
+  + dl {
+    margin-top: 10px;
+  }
+}
+
+dt {
+  margin-right: 5px;
+}
+
+.c-box {
+  margin-top: 30px;
+  padding: 20px;
+  background: $bg-color-1;
+  border-radius: 4px;
 }
 </style>

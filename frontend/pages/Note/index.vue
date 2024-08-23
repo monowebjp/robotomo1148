@@ -1,8 +1,5 @@
 <template>
-  <Content>
-    <div>
-
-    </div>
+  <Content bg-type="paper">
   </Content>
 </template>
 

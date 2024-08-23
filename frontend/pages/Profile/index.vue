@@ -1,31 +1,29 @@
 <template>
-  <Content>
-    <div>
-      <h2>ロボトモ3面図</h2>
-      <img src="/img/profile/setting.jpg" style="width: 500px;" />
-      <h2>配信アーカイブリスト</h2>
-      <ul>
-        <li>ダークソウル REMASTERED</li>
-        <li>ダークソウル 2 SKULER OF FIRST SIN</li>
-        <li>ダークソウル 3 </li>
-        <li>ドットホラーストーリー</li>
-        <li>ドットホラーストーリー 2</li>
-        <li>HOTEL SOULS</li>
-        <li>モンスターハンター ワールド アイスボーン</li>
-        <li>パラノマサイト</li>
-        <li>8番出口</li>
-        <li>偽夢</li>
-        <li>8番のりば</li>
-        <li>ファズモフォビア</li>
-        <li>クロノクロス</li>
-        <li>クロノトリガー</li>
-        <li>アーマードコア6</li>
-        <li>SEKIRO</li>
-        <li>OUTER WILDS</li>
-        <li>VA-11-HA-LA</li>
-        <li>ELDEN RING</li>
-      </ul>
-    </div>
+  <Content bg-type="paper">
+    <h2>ロボトモ3面図</h2>
+    <img src="/img/profile/setting.jpg" style="width: 500px;" />
+    <h2>配信アーカイブリスト</h2>
+    <ul>
+      <li>ダークソウル REMASTERED</li>
+      <li>ダークソウル 2 SKULER OF FIRST SIN</li>
+      <li>ダークソウル 3 </li>
+      <li>ドットホラーストーリー</li>
+      <li>ドットホラーストーリー 2</li>
+      <li>HOTEL SOULS</li>
+      <li>モンスターハンター ワールド アイスボーン</li>
+      <li>パラノマサイト</li>
+      <li>8番出口</li>
+      <li>偽夢</li>
+      <li>8番のりば</li>
+      <li>ファズモフォビア</li>
+      <li>クロノクロス</li>
+      <li>クロノトリガー</li>
+      <li>アーマードコア6</li>
+      <li>SEKIRO</li>
+      <li>OUTER WILDS</li>
+      <li>VA-11-HA-LA</li>
+      <li>ELDEN RING</li>
+    </ul>
   </Content>
 </template>
 
