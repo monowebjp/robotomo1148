@@ -14,7 +14,7 @@
 export default {
   methods: {
     isCurrentRoute(routePath) {
-      return this.$route.path === routePath
+      return this.$route.path.startsWith(routePath)
     }
   }
 }
