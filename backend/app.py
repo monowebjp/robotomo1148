@@ -77,6 +77,55 @@ def add_image():
     db.session.commit()
     return jsonify({"message": "Image added successfully"}), 201
 
+# 編集エンドポイント
+@app.route('/images/<int:image_id>', methods=['PUT'])
+def update_image(image_id):
+    image = ImageData.query.get_or_404(image_id)
+
+    data = request.form
+    image.author_name = data.get('author_name', image.author_name)
+    image.tags = data.getlist('tags') if 'tags' in data else image.tags
+    image.comments = data.get('comments', image.comments)
+    image.main_image_has_background = request.form.get('main_image_has_background', 'false').lower() == 'true'
+
+    # メイン画像の更新（必要な場合）
+    if 'main_image' in request.files:
+        main_image = request.files['main_image']
+        main_image_filename = secure_filename(main_image.filename)
+        main_image_path = os.path.join(app.config['UPLOAD_FOLDER'], main_image_filename)
+        main_image.save(main_image_path)
+        image.main_image_path = main_image_filename
+
+    # サブ画像の更新（必要な場合）
+    if 'sub_images' in request.files:
+        sub_image_paths = []
+        for i, sub_image in enumerate(request.files.getlist('sub_images')):
+            sub_image_filename = secure_filename(sub_image.filename)
+            sub_image_path = os.path.join(app.config['UPLOAD_FOLDER'], sub_image_filename)
+            sub_image.save(sub_image_path)
+
+            has_background = request.form.get(f'sub_image_has_background_{i}', 'false').lower() == 'true'
+
+            sub_image_paths.append({
+                'filename': sub_image_filename,
+                'has_background': has_background
+            })
+
+        image.sub_image_paths = sub_image_paths
+
+    db.session.commit()
+    return jsonify({"message": "Image updated successfully"}), 200
+
+
+#削除
+@app.route('/images/<int:image_id>', methods=['DELETE'])
+def delete_image(image_id):
+    image = ImageData.query.get_or_404(image_id)
+    db.session.delete(image)
+    db.session.commit()
+    return jsonify({"message": "Image deleted successfully"}), 200
+
+
 # 画像の取得エンドポイント
 @app.route('/images', methods=['GET'])
 def get_images():
@@ -121,7 +170,7 @@ def get_image(image_id):
 def images_options():
     response = jsonify({"message": "CORS preflight"})
     response.headers.add("Access-Control-Allow-Origin", "http://localhost:3000")
-    response.headers.add("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+    response.headers.add("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS")
     response.headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization")
     return response, 200
 
