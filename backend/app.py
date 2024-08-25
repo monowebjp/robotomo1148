@@ -26,6 +26,7 @@ class ImageData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     author_name = db.Column(db.String(100), nullable=False)
     main_image_path = db.Column(db.String(255), nullable=True)
+    main_image_has_background = db.Column(db.Boolean, nullable=False, default=False)
     sub_image_paths = db.Column(db.PickleType, nullable=True)
     tags = db.Column(db.PickleType, nullable=True)
     comments = db.Column(db.Text, nullable=True)
@@ -48,17 +49,26 @@ def add_image():
     main_image_path = os.path.join(app.config['UPLOAD_FOLDER'], main_image_filename)
     main_image.save(main_image_path)
 
+    main_image_has_background = request.form.get('main_image_has_background', 'false').lower() == 'true'
+
     # サブ画像の保存
     sub_image_paths = []
-    for sub_image in request.files.getlist('sub_images'):
+    for i, sub_image in enumerate(request.files.getlist('sub_images')):
         sub_image_filename = secure_filename(sub_image.filename)
         sub_image_path = os.path.join(app.config['UPLOAD_FOLDER'], sub_image_filename)
         sub_image.save(sub_image_path)
-        sub_image_paths.append(sub_image_filename)
+
+        has_background = request.form.get(f'sub_image_has_background_{i}', 'false').lower() == 'true'
+
+        sub_image_paths.append({
+            'filename': sub_image_filename,
+            'has_background': has_background
+        })
 
     new_image = ImageData(
         author_name=author_name,
         main_image_path=main_image_filename,
+        main_image_has_background=main_image_has_background,
         sub_image_paths=sub_image_paths,
         tags=tags,
         comments=comments
@@ -77,7 +87,11 @@ def get_images():
             'id': image.id,
             'author_name': image.author_name,
             'main_image_path': f"/img/thanks/{image.main_image_path}",
-            'sub_image_paths': [f"/img/thanks/{path}" for path in image.sub_image_paths],
+            'main_image_has_background': image.main_image_has_background,
+            'sub_image_paths': [{
+                'filename': f"/img/thanks/{sub_image['filename']}",
+                'has_background': sub_image['has_background']
+            } for sub_image in image.sub_image_paths],
             'tags': image.tags,
             'comments': image.comments,
         }
@@ -92,7 +106,11 @@ def get_image(image_id):
         'id': image.id,
         'author_name': image.author_name,
         'main_image_path': f"/img/thanks/{image.main_image_path}",
-        'sub_image_paths': [f"/img/thanks/{path}" for path in image.sub_image_paths],
+        'main_image_has_background': image.main_image_has_background,
+        'sub_image_paths': [{
+            'filename': f"/img/thanks/{sub_image['filename']}",
+            'has_background': sub_image['has_background']
+        } for sub_image in image.sub_image_paths],
         'tags': image.tags,
         'comments': image.comments,
     }

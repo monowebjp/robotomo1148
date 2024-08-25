@@ -10,10 +10,13 @@
   </nav>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   methods: {
     isCurrentRoute(routePath) {
+      if (routePath === '/') {
+        return this.$route.path === '/'
+      }
       return this.$route.path.startsWith(routePath)
     }
   }
@@ -91,5 +94,3 @@ a {
   }
 }
 </style>
-<script setup lang="ts">
-</script>

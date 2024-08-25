@@ -1,6 +1,8 @@
 <template>
   <div>
-    <img :src="mainSlide" alt="" class="main">
+    <div class="main" :class="{'u-bg--Dark': currentImageHasBackground}">
+      <img :src="mainSlide" alt="" class="main__img">
+    </div>
     <ul v-if="subPaths.length > 0">
       <li>
         <input id="imageSlide0" type="radio" v-model="mainSlide" :value="mainPath">
@@ -9,9 +11,9 @@
         </label>
       </li>
       <li v-for="(subPath, index) in subPaths" :key="subPath">
-        <input :id="`'imageSlide${index+1}`" type="radio" v-model="mainSlide" :value="subPath">
-        <label :for="`'imageSlide${index+1}`">
-          <img :src="subPath" alt="">
+        <input :id="`'imageSlide${index+1}`" type="radio" v-model="mainSlide" :value="subPath.filename">
+        <label :for="`'imageSlide${index+1}`" :class="{'u-bg--Dark': subPath.has_background}">
+          <img :src="subPath.filename" alt="">
         </label>
       </li>
     </ul>
@@ -25,13 +27,36 @@ export default {
       type: String,
       required: true
     },
+    mainBg: {
+      type: Boolean,
+      required: true
+    },
     subPaths: {
       type: Array
     }
   },
   data() {
     return {
-      mainSlide: this.mainPath
+      mainSlide: this.mainPath,
+      currentImageHasBackground: this.mainBg
+    }
+  },
+  watch: {
+    mainSlide(newSlide) {
+      this.updateBackgroundStatus(newSlide);
+    }
+  },
+  mounted() {
+    this.updateBackgroundStatus(this.mainSlide);
+  },
+  methods: {
+    updateBackgroundStatus(slide) {
+      if (slide === this.mainPath) {
+        this.currentImageHasBackground = this.mainBg; // メイン画像には背景色がない前提（必要に応じて変更）
+      } else {
+        const selectedSubPath = this.subPaths.find(subPath => subPath.filename === slide);
+        this.currentImageHasBackground = selectedSubPath ? selectedSubPath.has_background : false;
+      }
     }
   }
 }
@@ -39,8 +64,13 @@ export default {
 
 <style lang="scss" scoped>
 .main {
-  margin: 0 auto;
-  max-width: 100%;
+  margin-top: 20px;
+  padding: 20px;
+
+  &__img {
+    margin: 0 auto;
+    max-width: 100%;
+  }
 }
 
 ul, li {
@@ -93,6 +123,10 @@ label {
       opacity: .75;
     }
   }
+}
+
+.u-bg--Dark {
+  background: $mono-color-400;
 }
 
 input {
