@@ -1,6 +1,15 @@
 <template>
-  <button><slot /></button>
+  <button :type="type"><slot /></button>
 </template>
+<script lang="ts">
+export default {
+  props: {
+    type: {
+      type: String
+    }
+  }
+}
+</script>
 
 <style lang="scss" scoped>
 button {

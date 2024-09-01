@@ -34,7 +34,7 @@
         <dt><label for="comments">コメント</label></dt>
         <dd><textarea v-model="form.comments" id="comments"></textarea></dd>
       </dl>
-      <button type="submit">保存</button>
+      <Button type="submit">保存</Button>
     </form>
   </Content>
 </template>
@@ -42,6 +42,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import Content from "~/components/app/Content.vue";
+import Button from "~/components/atoms/Button.vue";
 
 interface SubImage {
   file: File

@@ -1,10 +1,66 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, redirect, session, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+import requests
 import os
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+app.secret_key = os.urandom(24)
+
+CLIENT_ID = os.getenv('CLIENT_ID')
+CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+
+AUTHORIZATION_BASE_URL = 'https://id.twitch.tv/oauth2/authorize'
+TOKEN_URL = 'https://id.twitch.tv/oauth2/token'
+REDIRECT_URI = 'http://localhost:5000/callback'  # フロントエンドからリダイレクトされるURL
+
+# ログイン
+@app.route('/login')
+def login():
+    twitch_auth_url = (
+        f"{AUTHORIZATION_BASE_URL}?response_type=code"
+        f"&client_id={CLIENT_ID}"
+        f"&redirect_uri={REDIRECT_URI}"
+        f"&scope=user:read:email"
+    )
+    return redirect(twitch_auth_url)
+
+@app.route('/callback')
+def callback():
+    code = request.args.get('code')
+    token_data = {
+        'client_id': CLIENT_ID,
+        'client_secret': CLIENT_SECRET,
+        'grant_type': 'authorization_code',
+        'code': code,
+        'redirect_uri': REDIRECT_URI
+    }
+
+    token_response = requests.post(TOKEN_URL, data=token_data)
+    token_json = token_response.json()
+    access_token = token_json.get('access_token')
+
+    session['access_token'] = access_token
+
+    return redirect('http://localhost:3000/dashboard')  # Nuxt3のフロントエンドにリダイレクト
+
+@app.route('/userinfo')
+def userinfo():
+    access_token = session.get('access_token')
+    if not access_token:
+        return {'error': 'Unauthorized'}, 401
+
+    headers = {
+        'Authorization': f'Bearer {access_token}',
+        'Client-ID': CLIENT_ID
+    }
+
+    response = requests.get('https://api.twitch.tv/helix/users', headers=headers)
+    return response.json()
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
 # CORS設定の見直し
 CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
