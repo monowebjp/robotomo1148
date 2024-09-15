@@ -18,7 +18,11 @@
       </dl>
 
       <div class="c-box">
-        <p v-if="image.comments">{{ image.comments }}</p>
+        <div v-if="image.comments">
+          <p v-for="(paragraph, index) in splitComments(image.comments)" :key="index">
+            {{ paragraph }}
+          </p>
+        </div>
       </div>
 
     </div>
@@ -48,6 +52,11 @@ interface ImageData {
 const route = useRoute()
 const image = ref<ImageData | null>(null)
 const loading = ref(true)  // ローディング状態を管理するための変数
+
+// コメントを改行で分割して返す関数
+const splitComments = (comments: string) => {
+  return comments.split(/\r\n|\n/).filter(paragraph => paragraph.trim() !== '')
+}
 
 onMounted(async () => {
   try {

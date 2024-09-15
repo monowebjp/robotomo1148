@@ -1,6 +1,6 @@
 <template>
   <ul>
-    <li v-for="tag in tags">{{ tag }}</li>
+    <li v-for="tag in tags" :key="tag">{{ tag }}</li>
   </ul>
 </template>
 
@@ -19,6 +19,10 @@ export default {
 ul, li {
   margin: 0;
   padding: 0;
+}
+
+ul {
+  display: flex;
 }
 
 li {

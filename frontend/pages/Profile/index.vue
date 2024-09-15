@@ -2,6 +2,9 @@
   <Content bg-type="paper">
     <h2>ロボトモ3面図</h2>
     <img src="/img/profile/setting.jpg" style="width: 500px;" />
+    <h2>ロボトモ3D 等身大ver.</h2>
+    <h2>ロボトモ3D もちょver.</h2>
+    <h2>ロボトモ3D もちょver.</h2>
     <h2>配信アーカイブリスト</h2>
     <ul>
       <li>ダークソウル REMASTERED</li>

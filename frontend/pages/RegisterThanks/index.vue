@@ -1,11 +1,35 @@
 <template>
   <Content bg-type="paper">
     <h1>いただいた画像登録</h1>
-    <form @submit.prevent="registerImage" enctype="multipart/form-data">
+    <form @submit.prevent="submitForm" enctype="multipart/form-data">
       <dl>
         <dt><label for="author_name">書いてくれた人</label></dt>
-        <dd><input v-model="form.author_name" id="author_name" required /></dd>
+        <select v-model="form.author_id" @change="handleAuthorChange">
+          <option value="">著者を選択</option>
+          <option v-for="author in authors" :key="author.id" :value="author.id">
+            {{ author.author_name }}
+          </option>
+          <!-- 新規登録用のオプション -->
+          <option value="new">新規登録</option>
+        </select>
       </dl>
+
+      <!-- 新規著者名の入力フォーム（新規登録が選択された場合に表示） -->
+      <div v-if="form.author_id === 'new'">
+        <label for="new_author_name">新規著者名:</label>
+        <input type="text" v-model="form.new_author_name" placeholder="新しい著者名を入力" required />
+
+        <!-- SNS URLを動的に入力できるフォーム -->
+        <div>
+          <label for="new_author_sns">SNS URL:</label>
+          <div v-for="(sns, index) in form.new_author_sns_urls" :key="index">
+            <input type="text" v-model="form.new_author_sns_urls[index]" placeholder="SNS URLを入力" />
+            <button type="button" @click="removeSnsUrl(index)">削除</button>
+          </div>
+          <button type="button" @click="addSnsUrl">SNS URLを追加</button>
+        </div>
+      </div>
+
       <dl>
         <dt><label for="main_image">メイン画像</label></dt>
         <dd><input type="file" @change="handleMainImage" id="main_image" required /></dd>
@@ -40,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import Content from "~/components/app/Content.vue";
 import Button from "~/components/atoms/Button.vue";
 
@@ -50,7 +74,9 @@ interface SubImage {
 }
 
 interface Form {
-  author_name: string
+  author_id: string
+  new_author_name: string
+  new_author_sns_urls: string[]
   main_image: File | null
   main_image_has_background: boolean
   sub_images: SubImage[]
@@ -58,8 +84,10 @@ interface Form {
   comments: string
 }
 
-const form = ref<Form>({
-  author_name: '',
+const form = reactive<Form>({
+  author_id: '',              // 既存著者のID
+  new_author_name: '',         // 新規著者名
+  new_author_sns_urls: [''],   // 新規著者のSNS URL配列
   main_image: null,
   main_image_has_background: false,
   sub_images: [],
@@ -67,51 +95,99 @@ const form = ref<Form>({
   comments: ''
 })
 
-const handleMainImage = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  if (target.files && target.files[0]) {
-    form.value.main_image = target.files[0]
+const authors = ref([]); // 著者リストを取得して格納
+
+// 著者選択の変更イベント
+const handleAuthorChange = () => {
+  if (form.author_id === 'new') {
+    form.new_author_name = ''
+    form.new_author_sns_urls = ['']
   }
 }
 
+const handleMainImage = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  if (target.files && target.files[0]) {
+    form.main_image = target.files[0]
+  }
+}
+
+// サブ画像の処理
 const handleSubImages = (event: Event) => {
   const target = event.target as HTMLInputElement
   if (target.files) {
-    form.value.sub_images = Array.from(target.files).slice(0, 5).map(file => ({
+    form.sub_images = Array.from(target.files).slice(0, 5).map(file => ({
       file,
       hasBackground: false
     }))
   }
 }
 
-const registerImage = async () => {
-  const formData = new FormData()
-  formData.append('author_name', form.value.author_name)
-  if (form.value.main_image) {
-    formData.append('main_image', form.value.main_image)
+// SNS URLの追加・削除
+const addSnsUrl = () => form.new_author_sns_urls.push('');
+const removeSnsUrl = (index: number) => form.new_author_sns_urls.splice(index, 1);
+
+// 画像登録処理
+const submitForm = async () => {
+  const formData = new FormData();
+
+  // 著者IDか新規著者情報を送信
+  if (form.author_id === 'new') {
+    formData.append('new_author_name', form.new_author_name);
+    form.new_author_sns_urls.forEach((url, index) => {
+      formData.append(`new_author_sns_urls[${index}]`, url);
+    });
+  } else {
+    formData.append('author_id', form.author_id || '');
   }
-  formData.append('main_image_has_background', form.value.main_image_has_background.toString())
-  form.value.sub_images.forEach((image, index) => {
-    formData.append('sub_images', image.file)
-    formData.append(`sub_image_has_background_${index}`, image.hasBackground.toString())
-  })
-  formData.append('tags', form.value.tags.split(',').map(tag => tag.trim()).join(','))
-  formData.append('comments', form.value.comments)
+
+  // メイン画像の追加
+  if (form.main_image) {
+    formData.append('main_image', form.main_image);
+  }
+  formData.append('main_image_has_background', form.main_image_has_background.toString());
+
+  // サブ画像の追加
+  form.sub_images.forEach((image, index) => {
+    formData.append('sub_images', image.file);
+    formData.append(`sub_image_has_background_${index}`, image.hasBackground.toString());
+  });
+
+  // タグとコメントの追加
+  formData.append('tags', form.tags.split(',').map(tag => tag.trim()).join(','));
+  formData.append('comments', form.comments);
 
   try {
     const response = await fetch('/api/images', {
       method: 'POST',
-      body: formData,
-    })
+      body: formData
+    });
 
     if (response.ok) {
-      alert('Image registered successfully')
+      alert('画像が正常に登録されました');
     } else {
-      alert(`Error: ${response.status}`)
+      alert(`エラー: ${response.status}`);
     }
   } catch (error) {
-    console.error('Error:', error)
-    alert('An error occurred during registration')
+    console.error('登録中にエラーが発生しました:', error);
+    alert('登録中にエラーが発生しました');
   }
-}
+};
+
+// 著者リストを取得
+const fetchAuthors = async () => {
+  try {
+    const response = await fetch('/api/authors');
+    if (!response.ok) {
+      throw new Error('著者リストの取得ぺろぺろ');
+    }
+    authors.value = await response.json();
+  } catch (error) {
+    console.error('著者リストの取得エラー:', error);
+    alert(`著者リストの取得に失敗しました: ${error.message}`);
+  }
+};
+
+// コンポーネントがマウントされた時に著者リストを取得
+fetchAuthors();
 </script>
