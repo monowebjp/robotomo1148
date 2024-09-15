@@ -6,6 +6,9 @@
     </div>
     <Search />
     <ImageGallery :images="images" />
+    <div v-if="hasMore">
+      <button @click="nextPage">次へ</button>
+    </div>
   </Content>
 </template>
 
@@ -21,15 +24,34 @@ interface Image {
 }
 
 const images = ref<Image[]>([])
+const page = ref(1)  // 現在のページ
+const hasMore = ref(true)  // 次のページがあるかどうかを管理
+
+// データをロードする関数
+const loadImages = async () => {
+  try {
+    const response = await fetch(`/api/images?page=${page.value}&limit=30`)
+    if (response.ok) {
+      const data = await response.json()
+      images.value.push(...data.images)  // 取得した画像を追加
+      hasMore.value = data.pages > page.value  // 次のページがあるかどうか確認
+    } else {
+      console.error('Failed to fetch images')
+    }
+  } catch (error) {
+    console.error('An error occurred while fetching the images:', error)
+  }
+}
 
 onMounted(async () => {
-  const response = await fetch('/api/images')
-  if (response.ok) {
-    images.value = await response.json() as Image[]
-  } else {
-    console.error('Failed to fetch images')
-  }
+  await loadImages()
 })
+
+// 次のページを取得する関数
+const nextPage = async () => {
+  page.value += 1  // ページ番号を増やす
+  await loadImages()
+}
 </script>
 
 <style lang="scss" scoped>

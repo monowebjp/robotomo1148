@@ -244,9 +244,14 @@ def delete_image(image_id):
 # 画像の取得エンドポイント
 @app.route('/images', methods=['GET'])
 def get_images():
-    images = ImageData.query.all()
+    page = request.args.get('page', 1, type=int)  # ページ番号を取得、デフォルトは1
+    per_page = request.args.get('limit', 30, type=int)  # 1ページあたりの件数、デフォルトは30
+
+    images_query = ImageData.query.order_by(ImageData.id.desc())  # 新しい順にソート
+    paginated_images = images_query.paginate(page=page, per_page=per_page, error_out=False)
+
     result = []
-    for image in images:
+    for image in paginated_images.items:
         image_data = {
             'id': image.id,
             'author': {
@@ -264,7 +269,12 @@ def get_images():
             'comments': image.comments,
         }
         result.append(image_data)
-    return jsonify(result), 200
+    return jsonify({
+        'images': result,
+        'total': paginated_images.total,  # 総件数
+        'pages': paginated_images.pages,  # 総ページ数
+        'current_page': page,  # 現在のページ
+    }), 200
 
 # 個別ページのエンドポイント
 @app.route('/images/<int:image_id>', methods=['GET'])
